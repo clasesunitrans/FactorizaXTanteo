@@ -1,0 +1,270 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso Interactivo de Factorización por Tanteo</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #73c2fb;
+        }
+        .step, .quiz {
+            display: none;
+            margin-bottom: 20px;
+        }
+        .step.active, .quiz.active {
+            display: block;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #f7b533;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #e0a800;
+        }
+        .warning {
+            background-color: #ffcccc;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .answer {
+            display: none;
+            background-color: #e6f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .emoji {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            button {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Curso Interactivo: Factorización por Tanteo</h1>
+        <p>¡Aprende a factorizar ecuaciones cuadráticas de forma divertida y paso a paso! 🚀</p>
+
+        <!-- Tutorial Steps -->
+        <div id="step-1" class="step active">
+            <h2>🎯 Paso 1: ¿Qué es la factorización por tanteo?</h2>
+            <p>La factorización por tanteo es un método para expresar una ecuación cuadrática de la forma \( ax^2 + bx + c \) (donde \( a = 1 \)) como un producto de dos binomios: \( (x + N1)(x + N2) \). Necesitamos encontrar dos números \( N1 \) y \( N2 \) que cumplan:</p>
+            <ul>
+                <li>Multiplicados den \( c \).</li>
+                <li>Sumados den \( b \).</li>
+            </ul>
+            <p class="warning">⚠️ ¡Cuidado! Asegúrate de considerar los signos positivos y negativos de los divisores de \( c \).</p>
+        </div>
+
+        <div id="step-2" class="step">
+            <h2>🔍 Paso 2: Ejemplo 1 - \( x^2 + 5x + 6 \)</h2>
+            <p>Vamos a factorizar \( x^2 + 5x + 6 \). Aquí, \( a = 1 \), \( b = 5 \), \( c = 6 \). Buscamos dos números que:</p>
+            <ul>
+                <li>Multiplicados den \( 6 \).</li>
+                <li>Sumados den \( 5 \).</li>
+            </ul>
+            <p><strong>Divisores de 6:</strong> \( \pm 1, \pm 2, \pm 3, \pm 6 \).</p>
+            <p>Probamos: \( 2 \times 3 = 6 \) y \( 2 + 3 = 5 \). ¡Correcto!</p>
+            <p>Entonces, la factorización es: \( (x + 2)(x + 3) \).</p>
+            <p class="warning">⚠️ Error común: Olvidar verificar los signos. Como \( b \) y \( c \) son positivos, \( N1 \) y \( N2 \) deben ser positivos.</p>
+        </div>
+
+        <div id="step-3" class="step">
+            <h2>🔍 Paso 3: Ejemplo 2 - \( x^2 - 13x + 30 \)</h2>
+            <p>Ahora factorizamos \( x^2 - 13x + 30 \). Aquí, \( a = 1 \), \( b = -13 \), \( c = 30 \). Buscamos dos números que:</p>
+            <ul>
+                <li>Multiplicados den \( 30 \).</li>
+                <li>Sumados den \( -13 \).</li>
+            </ul>
+            <p><strong>Divisores de 30:</strong> \( \pm 1, \pm 2, \pm 3, \pm 5, \pm 6, \pm 10, \pm 15, \pm 30 \).</p>
+            <p>Probamos: \( -3 \times -10 = 30 \) y \( -3 + (-10) = -13 \). ¡Correcto!</p>
+            <p>Entonces, la factorización es: \( (x - 3)(x - 10) \).</p>
+            <p class="warning">⚠️ Error común: No considerar números negativos cuando \( b \) es negativo.</p>
+        </div>
+
+        <div id="step-4" class="step">
+            <h2>🛠️ Paso 4: Método CPR²</h2>
+            <p>Para resolver ejercicios, usa el método <strong>CPR²</strong>:</p>
+            <ul>
+                <li><strong>Comprender:</strong> Identifica \( a \), \( b \), y \( c \). Aquí, \( a = 1 \).</li>
+                <li><strong>Planificar:</strong> Busca los divisores de \( c \) y selecciona los que suman \( b \).</li>
+                <li><strong>Resolver:</strong> Escribe la factorización como \( (x + N1)(x + N2) \).</li>
+                <li><strong>Revisar:</strong> Multiplica los binomios para verificar que obtienes la ecuación original.</li>
+            </ul>
+        </div>
+
+        <div id="quiz" class="quiz">
+            <h2>📝 Cuestionario</h2>
+            <p>¡Practica con estos ejercicios! Usa el método CPR². Haz clic en "Mostrar Respuesta" para verificar.</p>
+            <h3>Ecuaciones:</h3>
+            <ol>
+                <li>\( x^2 + 7x + 12 \)
+                    <button onclick="toggleAnswer('answer1')">Mostrar Respuesta</button>
+                    <div id="answer1" class="answer">\( (x + 3)(x + 4) \)</div>
+                </li>
+                <li>\( x^2 - 8x + 15 \)
+                    <button onclick="toggleAnswer('answer2')">Mostrar Respuesta</button>
+                    <div id="answer2" class="answer">\( (x - 3)(x - 5) \)</div>
+                </li>
+                <li>\( x^2 + 9x + 20 \)
+                    <button onclick="toggleAnswer('answer3')">Mostrar Respuesta</button>
+                    <div id="answer3" class="answer">\( (x + 4)(x + 5) \)</div>
+                </li>
+                <li>\( x^2 - 10x + 24 \)
+                    <button onclick="toggleAnswer('answer4')">Mostrar Respuesta</button>
+                    <div id="answer4" class="answer">\( (x - 4)(x - 6) \)</div>
+                </li>
+                <li>\( x^2 + 3x + 2 \)
+                    <button onclick="toggleAnswer('answer5')">Mostrar Respuesta</button>
+                    <div id="answer5" class="answer">\( (x + 1)(x + 2) \)</div>
+                </li>
+                <li>\( x^2 - 7x + 10 \)
+                    <button onclick="toggleAnswer('answer6')">Mostrar Respuesta</button>
+                    <div id="answer6" class="answer">\( (x - 2)(x - 5) \)</div>
+                </li>
+                <li>\( x^2 + 8x + 15 \)
+                    <button onclick="toggleAnswer('answer7')">Mostrar Respuesta</button>
+                    <div id="answer7" class="answer">\( (x + 3)(x + 5) \)</div>
+                </li>
+            </ol>
+            <h3>Problemas:</h3>
+            <ol>
+                <li>El área de un rectángulo es \( x^2 + 7x + 12 \). Encuentra las dimensiones.
+                    <button onclick="toggleAnswer('answer8')">Mostrar Respuesta</button>
+                    <div id="answer8" class="answer">Dimensiones: \( (x + 3) \) y \( (x + 4) \).</div>
+                </li>
+                <li>Un jardín rectangular tiene un área de \( x^2 - 8x + 15 \). ¿Cuáles son sus dimensiones?
+                    <button onclick="toggleAnswer('answer9')">Mostrar Respuesta</button>
+                    <div id="answer9" class="answer">Dimensiones: \( (x - 3) \) y \( (x - 5) \).</div>
+                </li>
+                <li>El producto de dos números consecutivos es \( x^2 + 5x + 6 \). Encuentra los números.
+                    <button onclick="toggleAnswer('answer10')">Mostrar Respuesta</button>
+                    <div id="answer10" class="answer">Números: \( (x + 2) \) y \( (x + 3) \).</div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="button-container">
+            <button id="prevBtn" onclick="prevStep()" disabled>Anterior</button>
+            <button id="nextBtn" onclick="nextStep()">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        function showStep(step) {
+            document.querySelectorAll('.step, .quiz').forEach(el => el.classList.remove('active'));
+            if (step <= totalSteps) {
+                document.getElementById(`step-${step}`).classList.add('active');
+                document.getElementById('prevBtn').disabled = step === 1;
+                document.getElementById('nextBtn').textContent = step === totalSteps ? 'Final' : 'Siguiente';
+            } else {
+                document.getElementById('quiz').classList.add('active');
+                document.getElementById('nextBtn').textContent = 'Final';
+                document.getElementById('nextBtn').disabled = true;
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps + 1) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        function toggleAnswer(id) {
+            const answer = document.getElementById(id);
+            answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
+        }
+
+        showStep(currentStep);
+    </script>
+</body>
+</html>
